@@ -1,0 +1,39 @@
+{
+  "name": "appsyn-master-class-code",
+  "private": true,
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "sls": "sls",
+    "test": "jest --verbose ./__tests__/test_cases/unit",
+    "integration-test": "jest --verbose ./__tests__/test_cases/integration",
+    "e2e-test": "jest --verbose ./__tests__/test_cases/e2e"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@types/jest": "^29.5.14",
+    "amplify-appsync-simulator": "^2.4.1",
+    "amplify-velocity-template": "^1.4.15",
+    "axios": "^1.8.1",
+    "dotenv": "^16.4.7",
+    "lodash": "^4.17.21",
+    "serverless": "4.6.3",
+    "serverless-appsync-plugin": "^2.9.1",
+    "serverless-export-env": "github:arabold/serverless-export-env",
+    "serverless-export-outputs": "^1.0.2",
+    "serverless-iam-roles-per-function": "^3.2.0"
+  },
+  "dependencies": {
+    "@aws-sdk/client-cognito-identity-provider": "^3.750.0",
+    "@aws-sdk/client-dynamodb": "^3.751.0",
+    "@aws-sdk/client-s3": "^3.758.0",
+    "@aws-sdk/lib-dynamodb": "^3.751.0",
+    "@aws-sdk/s3-request-presigner": "^3.758.0",
+    "chance": "^1.1.12",
+    "jest": "^29.7.0",
+    "ulid": "^2.3.0"
+  }
+}

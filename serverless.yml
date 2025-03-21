@@ -1,0 +1,258 @@
+# "org" ensures this Service is used with the correct Serverless Framework Access Key.
+org: ibrarmunir
+# "service" is the name of this project. This will also be added to your AWS resource names.
+service: appsync-masterclass-api
+
+plugins:
+  - serverless-appsync-plugin
+  - serverless-iam-roles-per-function
+  - serverless-export-outputs
+
+provider:
+  name: aws
+  stage: dev
+  runtime: nodejs20.x
+  profile: ducp13
+  region: us-east-1
+  environment:
+    STAGE: ${self:custom.stage}
+    AWS_NODEJS_CONNECTION_REUSE_ENABLED: "1"
+
+package:
+  exclude:
+    - "**/*.test.js"
+    - .env
+    - outputs.json
+
+custom:
+  stage: ${opt:stage, self:provider.stage}
+  region: ${opt:region, self:provider.region}
+
+  exportOutputs:
+    include:
+      - CognitoUserPoolId
+      - UsersTable
+      - AwsRegion
+      - WebCognitoUserPoolClientId
+      - AppsyncUrl
+      - AssetsBucket
+      - TweetsTable
+      - TimelinesTable
+    output:
+      file: ./outputs.json
+      format: json
+
+appSync: ${file(serverless.appsync-api.yml)}
+
+functions:
+  confirmUserSignup:
+    handler: functions/confirm-user-signup.handler
+    environment:
+      USERS_TABLE: !Ref UsersTable
+    iamRoleStatements:
+      - Effect: Allow
+        Action: dynamodb:PutItem
+        Resource: !GetAtt UsersTable.Arn
+  getImageUploadUrl:
+    handler: functions/get-upload-url.handler
+    environment:
+      BUCKET_NAME: !Ref AssetsBucket
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - s3:PutObject
+          - s3:PutObjectAcl
+        Resource: !Sub ${AssetsBucket.Arn}/*
+
+  tweet:
+    handler: functions/tweet.handler
+    environment:
+      TWEETS_TABLE: !Ref TweetsTable
+      USERS_TABLE: !Ref UsersTable
+      TIMELINES_TABLE: !Ref TimelinesTable
+    iamRoleStatements:
+      - Effect: Allow
+        Action: dynamodb:UpdateItem
+        Resource: !GetAtt UsersTable.Arn
+      - Effect: Allow
+        Action: dynamodb:PutItem
+        Resource:
+          - !GetAtt TweetsTable.Arn
+          - !GetAtt TimelinesTable.Arn
+
+resources:
+  Resources:
+    UsersTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        Tags:
+          - Key: Enviornment
+            Value: ${self:custom.stage}
+          - Key: Name
+            Value: users-table
+    TweetsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+          - AttributeName: creator
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: byCreator
+            KeySchema:
+              - AttributeName: creator
+                KeyType: HASH
+              - AttributeName: id
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+
+        Tags:
+          - Key: Enviornment
+            Value: ${self:custom.stage}
+          - Key: Name
+            Value: tweets-table
+
+    TimelinesTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: userId
+            AttributeType: S
+          - AttributeName: tweetId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: userId
+            KeyType: HASH
+          - AttributeName: tweetId
+            KeyType: RANGE
+
+        Tags:
+          - Key: Enviornment
+            Value: ${self:custom.stage}
+          - Key: Name
+            Value: timelines-table
+
+    LikesTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: userId
+            AttributeType: S
+          - AttributeName: tweetId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: userId
+            KeyType: HASH
+          - AttributeName: tweetId
+            KeyType: RANGE
+        Tags:
+          - Key: Enviornment
+            Value: ${self:custom.stage}
+          - Key: Name
+            Value: likes-table
+
+    CognitoUserPool:
+      Type: AWS::Cognito::UserPool
+      Properties:
+        AutoVerifiedAttributes:
+          - email
+        Policies:
+          PasswordPolicy:
+            MinimumLength: 8
+            RequireLowercase: false
+            RequireUppercase: false
+            RequireNumbers: false
+            RequireSymbols: false
+        UsernameAttributes:
+          - email
+        Schema:
+          - AttributeDataType: String
+            Name: name
+            Required: false
+            Mutable: true
+        LambdaConfig:
+          PostConfirmation: !GetAtt ConfirmUserSignupLambdaFunction.Arn
+
+    UserPoolInvokeConfirmUserSignupLambdaPermission:
+      Type: AWS::Lambda::Permission
+      Properties:
+        Action: lambda:invokeFunction
+        FunctionName: !Ref ConfirmUserSignupLambdaFunction
+        Principal: cognito-idp.amazonaws.com
+        SourceArn: !GetAtt CognitoUserPool.Arn
+
+    CognitoUserPoolWebClient:
+      Type: AWS::Cognito::UserPoolClient
+      Properties:
+        ClientName: web
+        UserPoolId: !Ref CognitoUserPool
+        ExplicitAuthFlows:
+          - ALLOW_USER_SRP_AUTH
+          - ALLOW_REFRESH_TOKEN_AUTH
+          - ALLOW_USER_PASSWORD_AUTH
+        GenerateSecret: false
+        ReadAttributes:
+          - email
+          - email_verified
+        WriteAttributes:
+          - email
+          - name
+        RefreshTokenValidity: 1
+        TokenValidityUnits:
+          RefreshToken: days
+        PreventUserExistenceErrors: ENABLED
+    AssetsBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        PublicAccessBlockConfiguration:
+          BlockPublicAcls: false
+          IgnorePublicAcls: false
+          BlockPublicPolicy: true # or true, if you also want to block public bucket policies
+          RestrictPublicBuckets: true # or true, depending on your needs
+        OwnershipControls:
+          Rules:
+            - ObjectOwnership: BucketOwnerPreferred
+        AccelerateConfiguration:
+          AccelerationStatus: Enabled
+        CorsConfiguration:
+          CorsRules:
+            - AllowedMethods:
+                - GET
+                - PUT
+              AllowedOrigins:
+                - "*"
+              AllowedHeaders:
+                - "*"
+
+  Outputs:
+    CognitoUserPoolId:
+      Value: !Ref CognitoUserPool
+    WebCognitoUserPoolClientId:
+      Value: !Ref CognitoUserPoolWebClient
+    UsersTable:
+      Value: !Ref UsersTable
+    TweetsTable:
+      Value: !Ref TweetsTable
+    TimelinesTable:
+      Value: !Ref TimelinesTable
+    AwsRegion:
+      Value: ${self:custom.region}
+    AppsyncUrl:
+      Value: ${appsync:url}
+    AssetsBucket:
+      Value: !Ref AssetsBucket

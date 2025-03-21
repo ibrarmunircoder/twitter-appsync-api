@@ -1,0 +1,112 @@
+name: appsyncmasterclassapi
+schema: schema.api.graphql
+authentication:
+  type: AMAZON_COGNITO_USER_POOLS
+  config:
+    userPoolId: !Ref CognitoUserPool
+    awsRegion: us-east-1
+    defaultAction: ALLOW
+
+resolvers:
+  Query.getMyProfile:
+    kind: UNIT
+    dataSource: usersTable
+    request: mapping-templates/Query.getMyProfile.request.vtl
+    response: mapping-templates/Query.getMyProfile.response.vtl
+  Query.getTweets:
+    kind: UNIT
+    dataSource: tweetsTable
+    request: mapping-templates/Query.getTweets.request.vtl
+    response: mapping-templates/Query.getTweets.response.vtl
+  Query.getMyTimeline:
+    kind: UNIT
+    dataSource: timelinesTable
+    request: mapping-templates/Query.getMyTimeline.request.vtl
+    response: mapping-templates/Query.getMyTimeline.response.vtl
+  Query.getImageUploadUrl:
+    kind: UNIT
+    dataSource: getImageUploadUrlFunction
+
+  Mutation.editMyProfile:
+    kind: UNIT
+    dataSource: usersTable
+    request: mapping-templates/Mutation.editMyProfile.request.vtl
+    response: mapping-templates/Mutation.editMyProfile.response.vtl
+  Mutation.like:
+    kind: UNIT
+    dataSource: likeMutation
+    request: mapping-templates/Mutation.like.request.vtl
+    response: mapping-templates/Mutation.like.response.vtl
+  Mutation.tweet:
+    kind: UNIT
+    dataSource: tweetFunction
+
+  # NESTED RESOLVER
+  Tweet.profile:
+    kind: UNIT
+    request: mapping-templates/Tweet.profile.request.vtl
+    response: mapping-templates/Tweet.profile.response.vtl
+    dataSource: usersTable
+  Tweet.liked:
+    kind: UNIT
+    request: mapping-templates/Tweet.liked.request.vtl
+    response: mapping-templates/Tweet.liked.response.vtl
+    dataSource: likesTable
+  TimelinePage.tweets:
+    kind: UNIT
+    request: mapping-templates/TimelinePage.tweets.request.vtl
+    response: mapping-templates/TimelinePage.tweets.response.vtl
+    dataSource: tweetsTable
+
+dataSources:
+  usersTable:
+    type: AMAZON_DYNAMODB
+    description: "Users table"
+    config:
+      tableName: !Ref UsersTable
+  tweetsTable:
+    type: AMAZON_DYNAMODB
+    description: "Tweets table"
+    config:
+      tableName: !Ref TweetsTable
+  likesTable:
+    type: AMAZON_DYNAMODB
+    description: "Likes table"
+    config:
+      tableName: !Ref LikesTable
+  likeMutation:
+    type: AMAZON_DYNAMODB
+    description: "Like Mutation"
+    config:
+      tableName: !Ref LikesTable
+      iamRoleStatements:
+        - Effect: Allow
+          Action:
+            - dynamodb:PutItem
+          Resource: !GetAtt LikesTable.Arn
+        - Effect: Allow
+          Action:
+            - dynamodb:UpdateItem
+          Resource:
+            - !GetAtt UsersTable.Arn
+            - !GetAtt TweetsTable.Arn
+  timelinesTable:
+    type: AMAZON_DYNAMODB
+    description: "Timelines table"
+    config:
+      tableName: !Ref TimelinesTable
+
+  getImageUploadUrlFunction:
+    type: AWS_LAMBDA
+    config:
+      functionName: getImageUploadUrl
+
+  tweetFunction:
+    type: AWS_LAMBDA
+    config:
+      functionName: tweet
+
+substitutions: #global substitutions
+  TweetsTable: !Ref TweetsTable
+  UsersTable: !Ref UsersTable
+  LikesTable: !Ref LikesTable
