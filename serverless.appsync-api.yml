@@ -23,6 +23,11 @@ resolvers:
     dataSource: timelinesTable
     request: mapping-templates/Query.getMyTimeline.request.vtl
     response: mapping-templates/Query.getMyTimeline.response.vtl
+  Query.getLikes:
+    kind: UNIT
+    dataSource: timelinesTable
+    request: mapping-templates/Query.getLikes.request.vtl
+    response: mapping-templates/Query.getLikes.response.vtl
   Query.getImageUploadUrl:
     kind: UNIT
     dataSource: getImageUploadUrlFunction
@@ -37,6 +42,11 @@ resolvers:
     dataSource: likeMutation
     request: mapping-templates/Mutation.like.request.vtl
     response: mapping-templates/Mutation.like.response.vtl
+  Mutation.unlike:
+    kind: UNIT
+    dataSource: unlikeMutation
+    request: mapping-templates/Mutation.unlike.request.vtl
+    response: mapping-templates/Mutation.unlike.response.vtl
   Mutation.tweet:
     kind: UNIT
     dataSource: tweetFunction
@@ -52,10 +62,10 @@ resolvers:
     request: mapping-templates/Tweet.liked.request.vtl
     response: mapping-templates/Tweet.liked.response.vtl
     dataSource: likesTable
-  TimelinePage.tweets:
+  UnhydratedTweetsPage.tweets:
     kind: UNIT
-    request: mapping-templates/TimelinePage.tweets.request.vtl
-    response: mapping-templates/TimelinePage.tweets.response.vtl
+    request: mapping-templates/UnhydratedTweetsPage.tweets.request.vtl
+    response: mapping-templates/UnhydratedTweetsPage.tweets.response.vtl
     dataSource: tweetsTable
 
 dataSources:
@@ -83,6 +93,22 @@ dataSources:
         - Effect: Allow
           Action:
             - dynamodb:PutItem
+          Resource: !GetAtt LikesTable.Arn
+        - Effect: Allow
+          Action:
+            - dynamodb:UpdateItem
+          Resource:
+            - !GetAtt UsersTable.Arn
+            - !GetAtt TweetsTable.Arn
+  unlikeMutation:
+    type: AMAZON_DYNAMODB
+    description: "Like Mutation"
+    config:
+      tableName: !Ref LikesTable
+      iamRoleStatements:
+        - Effect: Allow
+          Action:
+            - dynamodb:DeleteItem
           Resource: !GetAtt LikesTable.Arn
         - Effect: Allow
           Action:

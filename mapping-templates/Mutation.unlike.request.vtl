@@ -4,13 +4,13 @@
   "transactItems": [
     {
       "table": "${LikesTable}",
-      "operation": "PutItem",
+      "operation": "DeleteItem",
       "key": {
         "userId": $util.dynamodb.toDynamoDBJson($context.identity.username),
         "tweetId": $util.dynamodb.toDynamoDBJson($context.arguments.tweetId)
       },
       "condition": {
-        "expression": "attribute_not_exists(tweetId)"
+        "expression": "attribute_exists(tweetId)"
       }
     },
     {
@@ -22,7 +22,7 @@
       "update": {
         "expression": "ADD likes :one",
         "expressionValues": {
-          ":one": $util.dynamodb.toDynamoDBJson(1)
+          ":one": $util.dynamodb.toDynamoDBJson(-1)
         }
       },
       "condition": {
@@ -38,7 +38,7 @@
       "update": {
         "expression": "ADD likesCounts :one",
         "expressionValues": {
-          ":one": $util.dynamodb.toDynamoDBJson(1)
+          ":one": $util.dynamodb.toDynamoDBJson(-1)
         }
       },
       "condition": {

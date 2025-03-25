@@ -7,10 +7,10 @@ type Query {
   getMyProfile: MyProfile!
   getProfile(screenName: String!): OtherProfile!
   getTweets(userId: String!, limit: Int!, nextToken: String): TweetsPage!
-  getLikes(userId: String!, limit: Int!, nextToken: String): TweetsPage!
+  getLikes(userId: ID!, limit: Int!, nextToken: String): UnhydratedTweetsPage!
   getFollowers(userId: String!, limit: Int!, nextToken: String): ProfilesPage!
   getFollowing(userId: String!, limit: Int!, nextToken: String): ProfilesPage!
-  getMyTimeline(limit: Int, nextToken: String): TimelinePage!
+  getMyTimeline(limit: Int, nextToken: String): UnhydratedTweetsPage!
   getImageUploadUrl(extension: String, contentType: String): AWSURL!
 }
 
@@ -142,7 +142,7 @@ type TweetsPage {
   nextToken: String
 }
 
-type TimelinePage {
+type UnhydratedTweetsPage {
   tweets: [ITweet!]
   nextToken: String
 }

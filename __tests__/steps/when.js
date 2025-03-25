@@ -8,9 +8,89 @@ const {
   SignUpCommand,
   AdminConfirmSignUpCommand,
 } = require("@aws-sdk/client-cognito-identity-provider");
-const { GraphQl } = require("../lib/graphql");
+const { GraphQl, registerFragment } = require("../lib/graphql");
 
 const cognitoClient = new CognitoIdentityProviderClient();
+
+const myProfileFragment = `
+fragment myProfileFields on MyProfile {
+  id
+  name
+  screenName
+  imageUrl
+  backgroundImageUrl
+  bio
+  location
+  website
+  birthdate
+  createdAt
+  tweetsCount
+  likesCounts
+  followingCount
+  followersCount
+}
+`;
+
+const otherProfileFragment = `
+fragment otherProfileFields on OtherProfile {
+  id
+  name
+  screenName
+  imageUrl
+  backgroundImageUrl
+  bio
+  location
+  website
+  birthdate
+  createdAt
+  followersCount
+  followingCount
+  tweetsCount
+  likesCounts
+}
+`;
+
+const iProfileFragment = `
+fragment iProfileFields on IProfile {
+  ... on MyProfile {
+    ... myProfileFields
+  }
+
+  ... on OtherProfile {
+    ... otherProfileFields
+  }
+}
+`;
+
+const tweetFragment = `
+fragment tweetFields on Tweet {
+  id
+  profile {
+    ... iProfileFields
+  }
+  createdAt
+  text
+  replies
+  likes
+  retweets
+  liked
+}
+`;
+
+const iTweetFragment = `
+fragment iTweetFields on ITweet {
+  ... on Tweet {
+    ... tweetFields
+  }
+
+}
+`;
+
+registerFragment("myProfileFields", myProfileFragment);
+registerFragment("otherProfileFields", otherProfileFragment);
+registerFragment("iProfileFields", iProfileFragment);
+registerFragment("tweetFields", tweetFragment);
+registerFragment("iTweetFields", iTweetFragment);
 
 const a_user_signs_up = async (password, name, email) => {
   const command = new SignUpCommand({
@@ -81,20 +161,7 @@ const a_user_calls_getMyProfile = async (user) => {
   const getMyProfile = `
     query getMyProfile {
       getMyProfile {
-          id
-          name
-          screenName
-          imageUrl
-          backgroundImageUrl
-          bio
-          location
-          website
-          birthdate
-          createdAt
-          followersCount
-          followingCount
-          tweetsCount
-          likesCounts
+          ... myProfileFields
       }
     }
   `;
@@ -113,20 +180,7 @@ const a_user_calls_editMyProfile = async (user, input) => {
   const editMyProfile = `
     mutation editMyProfile($input: ProfileInput!) {
       editMyProfile(newProfile: $input) {
-          id
-          name
-          screenName
-          imageUrl
-          backgroundImageUrl
-          bio
-          location
-          website
-          birthdate
-          createdAt
-          followersCount
-          followingCount
-          tweetsCount
-          likesCounts
+          ... myProfileFields
       }
     }
   `;
@@ -170,18 +224,7 @@ const a_user_calls_getImageUploadUrl = async (user, extension, contentType) => {
 const a_user_calls_tweet = async (user, text) => {
   const tweet = `mutation tweet($text: String!) {
     tweet(text: $text) {
-      id
-      profile {
-        id
-        name
-        screenName
-      }
-      liked
-      createdAt
-      text
-      replies
-      likes
-      retweets
+      ... tweetFields
     }
   }`;
   const variables = {
@@ -202,20 +245,7 @@ const a_user_calls_getTweets = async (user, userId, limit, nextToken) => {
   const getTweets = `query getTweets($userId: String!, $limit: Int!, $nextToken: String) {
     getTweets(userId: $userId, limit: $limit, nextToken: $nextToken) {
       tweets {
-        id
-        createdAt
-        profile {
-          id
-          name
-          screenName
-        }
-       ... on Tweet {
-          text
-          replies
-          likes
-          retweets
-          liked
-        }
+        ... iTweetFields
       }
       nextToken
     }
@@ -239,20 +269,7 @@ const a_user_calls_getMyTimeline = async (user, limit, nextToken) => {
   const getMyTimeline = `query getMyTimeline($limit: Int!, $nextToken: String) {
     getMyTimeline(limit: $limit, nextToken: $nextToken) {
       tweets {
-        id
-        createdAt
-        profile {
-          id
-          name
-          screenName
-        }
-       ... on Tweet {
-          text
-          replies
-          likes
-          retweets
-          liked
-        }
+        ... iTweetFields
       }
       nextToken
     }
@@ -270,6 +287,64 @@ const a_user_calls_getMyTimeline = async (user, limit, nextToken) => {
   );
 
   return data.getMyTimeline;
+};
+const a_user_calls_like = async (user, tweetId) => {
+  const like = `mutation like($tweetId: ID!) {
+    like(tweetId: $tweetId) 
+  }`;
+  const variables = {
+    tweetId,
+  };
+
+  const data = await GraphQl(
+    process.env.API_URL,
+    like,
+    user.accessToken,
+    variables
+  );
+
+  return data.like;
+};
+const a_user_calls_unlike = async (user, tweetId) => {
+  const unlike = `mutation unlike($tweetId: ID!) {
+    unlike(tweetId: $tweetId) 
+  }`;
+  const variables = {
+    tweetId,
+  };
+
+  const data = await GraphQl(
+    process.env.API_URL,
+    unlike,
+    user.accessToken,
+    variables
+  );
+
+  return data.unlike;
+};
+const a_user_calls_getLikes = async (user, userId, limit, nextToken) => {
+  const getLikes = `query getLikes($userId: ID!, $limit: Int!, $nextToken: String) {
+    getLikes(userId: $userId, limit: $limit, nextToken: $nextToken) {
+      nextToken
+      tweets {
+        ... iTweetFields
+      }
+    }
+  }`;
+  const variables = {
+    userId,
+    limit,
+    nextToken,
+  };
+
+  const data = await GraphQl(
+    process.env.API_URL,
+    getLikes,
+    user.accessToken,
+    variables
+  );
+
+  return data.getLikes;
 };
 
 const we_invoke_getImageUploadUrl = async (
@@ -321,4 +396,7 @@ module.exports = {
   a_user_calls_getImageUploadUrl,
   a_user_calls_getTweets,
   a_user_calls_getMyTimeline,
+  a_user_calls_like,
+  a_user_calls_unlike,
+  a_user_calls_getLikes,
 };
