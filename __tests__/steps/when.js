@@ -162,6 +162,13 @@ const a_user_calls_getMyProfile = async (user) => {
     query getMyProfile {
       getMyProfile {
           ... myProfileFields
+
+          tweets {
+            nextToken
+            tweets {
+              ... iTweetFields
+            }
+          }
       }
     }
   `;
@@ -181,6 +188,13 @@ const a_user_calls_editMyProfile = async (user, input) => {
     mutation editMyProfile($input: ProfileInput!) {
       editMyProfile(newProfile: $input) {
           ... myProfileFields
+
+          tweets {
+            nextToken
+            tweets {
+              ... iTweetFields
+            }
+          }
       }
     }
   `;
@@ -383,11 +397,27 @@ const we_invoke_tweet = async (username, text) => {
 
   return await handler(event, context);
 };
+const we_invoke_retweet = async (username, tweetId) => {
+  const handler = require("../../functions/retweet").handler;
+
+  const context = {};
+  const event = {
+    identity: {
+      username,
+    },
+    arguments: {
+      tweetId,
+    },
+  };
+
+  return await handler(event, context);
+};
 
 module.exports = {
   a_user_signs_up,
   a_user_calls_tweet,
   we_invoke_tweet,
+  we_invoke_retweet,
   we_invoke_confirmUserSignup,
   we_invoke_an_appsync_template,
   a_user_calls_getMyProfile,

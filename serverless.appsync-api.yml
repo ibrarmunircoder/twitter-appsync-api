@@ -50,9 +50,17 @@ resolvers:
   Mutation.tweet:
     kind: UNIT
     dataSource: tweetFunction
+  Mutation.retweet:
+    kind: UNIT
+    dataSource: retweetFunction
 
   # NESTED RESOLVER
   Tweet.profile:
+    kind: UNIT
+    request: mapping-templates/Tweet.profile.request.vtl
+    response: mapping-templates/Tweet.profile.response.vtl
+    dataSource: usersTable
+  Retweet.profile:
     kind: UNIT
     request: mapping-templates/Tweet.profile.request.vtl
     response: mapping-templates/Tweet.profile.response.vtl
@@ -62,10 +70,25 @@ resolvers:
     request: mapping-templates/Tweet.liked.request.vtl
     response: mapping-templates/Tweet.liked.response.vtl
     dataSource: likesTable
+  Retweet.retweetOf:
+    kind: UNIT
+    request: mapping-templates/ReTweet.retweetOf.request.vtl
+    response: mapping-templates/ReTweet.retweetOf.response.vtl
+    dataSource: tweetsTable
   UnhydratedTweetsPage.tweets:
     kind: UNIT
     request: mapping-templates/UnhydratedTweetsPage.tweets.request.vtl
     response: mapping-templates/UnhydratedTweetsPage.tweets.response.vtl
+    dataSource: tweetsTable
+  MyProfile.tweets:
+    kind: UNIT
+    request: mapping-templates/MyProfile.tweets.request.vtl
+    response: mapping-templates/MyProfile.tweets.response.vtl
+    dataSource: tweetsTable
+  OtherProfile.tweets:
+    kind: UNIT
+    request: mapping-templates/MyProfile.tweets.request.vtl
+    response: mapping-templates/MyProfile.tweets.response.vtl
     dataSource: tweetsTable
 
 dataSources:
@@ -131,6 +154,10 @@ dataSources:
     type: AWS_LAMBDA
     config:
       functionName: tweet
+  retweetFunction:
+    type: AWS_LAMBDA
+    config:
+      functionName: retweet
 
 substitutions: #global substitutions
   TweetsTable: !Ref TweetsTable
