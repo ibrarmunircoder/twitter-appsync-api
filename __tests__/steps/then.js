@@ -75,8 +75,6 @@ const retweet_exists_in_TweetsTable = async (userId, tweetId) => {
 
   const response = await ddbDocClient.send(command);
 
-  console.log(response, "ffhfhf");
-
   const retweet = _.get(response, "Items[0]");
 
   expect(retweet).toBeTruthy();
@@ -114,6 +112,7 @@ const there_are_N_tweets_in_TimelinesTable = async (userId, n) => {
     ExpressionAttributeValues: {
       ":userId": userId,
     },
+    ScanIndexForward: false,
   });
 
   const response = await ddbDocClient.send(command);

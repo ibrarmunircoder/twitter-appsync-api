@@ -73,7 +73,22 @@ fragment tweetFields on Tweet {
   replies
   likes
   retweets
+  retweeted
   liked
+}
+`;
+const retweetFragment = `
+fragment retweetFields on Retweet {
+  id
+  profile {
+    ... iProfileFields
+  }
+  createdAt
+  retweetOf {
+    ... on Tweet {
+      ... tweetFields
+    }
+  }
 }
 `;
 
@@ -83,6 +98,10 @@ fragment iTweetFields on ITweet {
     ... tweetFields
   }
 
+  ... on Retweet {
+    ... retweetFields
+  }
+
 }
 `;
 
@@ -90,6 +109,7 @@ registerFragment("myProfileFields", myProfileFragment);
 registerFragment("otherProfileFields", otherProfileFragment);
 registerFragment("iProfileFields", iProfileFragment);
 registerFragment("tweetFields", tweetFragment);
+registerFragment("retweetFields", retweetFragment);
 registerFragment("iTweetFields", iTweetFragment);
 
 const a_user_signs_up = async (password, name, email) => {
@@ -360,6 +380,23 @@ const a_user_calls_getLikes = async (user, userId, limit, nextToken) => {
 
   return data.getLikes;
 };
+const a_user_calls_retweet = async (user, tweetId) => {
+  const retweet = `mutation retweet($tweetId: ID!) {
+    retweet(tweetId: $tweetId)
+  }`;
+  const variables = {
+    tweetId,
+  };
+
+  const data = await GraphQl(
+    process.env.API_URL,
+    retweet,
+    user.accessToken,
+    variables
+  );
+
+  return data.retweet;
+};
 
 const we_invoke_getImageUploadUrl = async (
   username,
@@ -429,4 +466,5 @@ module.exports = {
   a_user_calls_like,
   a_user_calls_unlike,
   a_user_calls_getLikes,
+  a_user_calls_retweet,
 };

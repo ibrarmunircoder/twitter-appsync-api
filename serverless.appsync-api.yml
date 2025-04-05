@@ -53,6 +53,9 @@ resolvers:
   Mutation.retweet:
     kind: UNIT
     dataSource: retweetFunction
+  Mutation.unretweet:
+    kind: UNIT
+    dataSource: unretweetFunction
 
   # NESTED RESOLVER
   Tweet.profile:
@@ -60,6 +63,11 @@ resolvers:
     request: mapping-templates/Tweet.profile.request.vtl
     response: mapping-templates/Tweet.profile.response.vtl
     dataSource: usersTable
+  Tweet.retweeted:
+    kind: UNIT
+    request: mapping-templates/Tweet.retweeted.request.vtl
+    response: mapping-templates/Tweet.retweeted.response.vtl
+    dataSource: retweetsTable
   Retweet.profile:
     kind: UNIT
     request: mapping-templates/Tweet.profile.request.vtl
@@ -107,6 +115,11 @@ dataSources:
     description: "Likes table"
     config:
       tableName: !Ref LikesTable
+  retweetsTable:
+    type: AMAZON_DYNAMODB
+    description: "Retweets table"
+    config:
+      tableName: !Ref RetweetsTable
   likeMutation:
     type: AMAZON_DYNAMODB
     description: "Like Mutation"
@@ -158,6 +171,10 @@ dataSources:
     type: AWS_LAMBDA
     config:
       functionName: retweet
+  unretweetFunction:
+    type: AWS_LAMBDA
+    config:
+      functionName: unretweet
 
 substitutions: #global substitutions
   TweetsTable: !Ref TweetsTable
