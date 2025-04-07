@@ -81,6 +81,28 @@ const retweet_exists_in_TweetsTable = async (userId, tweetId) => {
 
   return retweet;
 };
+const retweet_does_not_exist_in_TweetsTable = async (userId, tweetId) => {
+  console.log(
+    `looking for retweet [${tweetId}] in table [${process.env.TWEETS_TABLE}]`
+  );
+
+  const command = new QueryCommand({
+    TableName: process.env.TWEETS_TABLE,
+    IndexName: "retweetsbyCreator",
+    KeyConditionExpression: "creator = :creator AND retweetOf = :tweetId",
+    ExpressionAttributeValues: {
+      ":creator": userId,
+      ":tweetId": tweetId,
+    },
+    Limit: 1,
+  });
+
+  const response = await ddbDocClient.send(command);
+
+  expect(response.Items).toHaveLength(0);
+
+  return null;
+};
 const retweet_exists_in_ReTweetsTable = async (userId, tweetId) => {
   const command = new GetCommand({
     TableName: process.env.RETWEETS_TABLE,
@@ -90,6 +112,19 @@ const retweet_exists_in_ReTweetsTable = async (userId, tweetId) => {
   const response = await ddbDocClient.send(command);
 
   expect(response.Item).toBeTruthy();
+
+  return response.Item;
+};
+
+const retweet_does_not_exists_in_ReTweetsTable = async (userId, tweetId) => {
+  const command = new GetCommand({
+    TableName: process.env.RETWEETS_TABLE,
+    Key: { userId, tweetId },
+  });
+
+  const response = await ddbDocClient.send(command);
+
+  expect(response.Item).not.toBeTruthy();
 
   return response.Item;
 };
@@ -147,8 +182,10 @@ module.exports = {
   user_can_download_image_from,
   user_can_upload_image_to_url,
   tweet_exists_in_TweetsTable,
+  retweet_does_not_exist_in_TweetsTable,
   retweet_exists_in_TweetsTable,
   retweet_exists_in_ReTweetsTable,
+  retweet_does_not_exists_in_ReTweetsTable,
   tweet_exists_in_TimelinesTable,
   tweetsCount_is_updated_in_UsersTable,
   there_are_N_tweets_in_TimelinesTable,

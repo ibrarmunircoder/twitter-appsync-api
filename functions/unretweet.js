@@ -3,6 +3,7 @@ const {
   DynamoDBDocumentClient,
   TransactWriteCommand,
   GetCommand,
+  QueryCommand,
 } = require("@aws-sdk/lib-dynamodb");
 const _ = require("lodash");
 
@@ -36,7 +37,7 @@ module.exports.handler = async (event) => {
     IndexName: "retweetsbyCreator",
     KeyConditionExpression: "creator = :creator AND retweetOf = :tweetId",
     ExpressionAttributeValues: {
-      ":creator": userId,
+      ":creator": username,
       ":tweetId": tweetId,
     },
     Limit: 1,
@@ -63,7 +64,7 @@ module.exports.handler = async (event) => {
     {
       Delete: {
         TableName: RETWEETS_TABLE,
-        Item: {
+        Key: {
           userId: username,
           tweetId,
         },
@@ -108,7 +109,7 @@ module.exports.handler = async (event) => {
         TableName: TIMELINES_TABLE,
         Key: {
           userId: username,
-          tweetId: id,
+          tweetId: retweet.id,
         },
       },
     });

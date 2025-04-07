@@ -115,7 +115,7 @@ functions:
         Resource: !GetAtt TweetsTable.Arn
       - Effect: Allow
         Action: dynamodb:Query
-        Resource: !Sub "${TweetsTable.Arn}/index/retweetsByCreator"
+        Resource: !Sub "${TweetsTable.Arn}/index/retweetsbyCreator"
       - Effect: Allow
         Action: dynamodb:UpdateItem
         Resource:
