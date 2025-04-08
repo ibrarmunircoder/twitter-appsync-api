@@ -56,6 +56,9 @@ resolvers:
   Mutation.unretweet:
     kind: UNIT
     dataSource: unretweetFunction
+  Mutation.reply:
+    kind: UNIT
+    dataSource: replyFunction
 
   # NESTED RESOLVER
   Tweet.profile:
@@ -175,6 +178,10 @@ dataSources:
     type: AWS_LAMBDA
     config:
       functionName: unretweet
+  replyFunction:
+    type: AWS_LAMBDA
+    config:
+      functionName: reply
 
 substitutions: #global substitutions
   TweetsTable: !Ref TweetsTable

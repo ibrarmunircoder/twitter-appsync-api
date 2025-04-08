@@ -81,6 +81,30 @@ const retweet_exists_in_TweetsTable = async (userId, tweetId) => {
 
   return retweet;
 };
+const reply_exists_in_TweetsTable = async (userId, tweetId) => {
+  console.log(
+    `looking for reply by [${userId}] to [${tweetId}] in table [${process.env.TWEETS_TABLE}]`
+  );
+
+  const command = new QueryCommand({
+    TableName: process.env.TWEETS_TABLE,
+    IndexName: "repliesForTweet",
+    KeyConditionExpression: "inReplyToTweetId = :tweetId",
+    ExpressionAttributeValues: {
+      ":userId": userId,
+      ":tweetId": tweetId,
+    },
+    FilterExpression: "creator = :userId",
+  });
+
+  const response = await ddbDocClient.send(command);
+
+  const reply = _.get(response, "Items.0");
+
+  expect(reply).toBeTruthy();
+
+  return reply;
+};
 const retweet_does_not_exist_in_TweetsTable = async (userId, tweetId) => {
   console.log(
     `looking for retweet [${tweetId}] in table [${process.env.TWEETS_TABLE}]`
@@ -189,4 +213,5 @@ module.exports = {
   tweet_exists_in_TimelinesTable,
   tweetsCount_is_updated_in_UsersTable,
   there_are_N_tweets_in_TimelinesTable,
+  reply_exists_in_TweetsTable,
 };

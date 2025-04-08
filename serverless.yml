@@ -102,6 +102,26 @@ functions:
           - !GetAtt TweetsTable.Arn
           - !GetAtt TimelinesTable.Arn
           - !GetAtt RetweetsTable.Arn
+  reply:
+    handler: functions/reply.handler
+    environment:
+      TWEETS_TABLE: !Ref TweetsTable
+      USERS_TABLE: !Ref UsersTable
+      TIMELINES_TABLE: !Ref TimelinesTable
+    iamRoleStatements:
+      - Effect: Allow
+        Action: dynamodb:GetItem
+        Resource: !GetAtt TweetsTable.Arn
+      - Effect: Allow
+        Action: dynamodb:UpdateItem
+        Resource:
+          - !GetAtt UsersTable.Arn
+          - !GetAtt TweetsTable.Arn
+      - Effect: Allow
+        Action: dynamodb:PutItem
+        Resource:
+          - !GetAtt TweetsTable.Arn
+          - !GetAtt TimelinesTable.Arn
   unretweet:
     handler: functions/unretweet.handler
     environment:
@@ -156,6 +176,8 @@ resources:
             AttributeType: S
           - AttributeName: retweetOf
             AttributeType: S
+          - AttributeName: inReplyToTweetId
+            AttributeType: S
         KeySchema:
           - AttributeName: id
             KeyType: HASH
@@ -173,6 +195,15 @@ resources:
               - AttributeName: creator
                 KeyType: HASH
               - AttributeName: retweetOf
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+
+          - IndexName: repliesForTweet
+            KeySchema:
+              - AttributeName: inReplyToTweetId
+                KeyType: HASH
+              - AttributeName: id
                 KeyType: RANGE
             Projection:
               ProjectionType: ALL
