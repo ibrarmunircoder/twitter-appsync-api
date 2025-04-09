@@ -66,6 +66,11 @@ resolvers:
     request: mapping-templates/Tweet.profile.request.vtl
     response: mapping-templates/Tweet.profile.response.vtl
     dataSource: usersTable
+  Reply.profile:
+    kind: UNIT
+    request: mapping-templates/Tweet.profile.request.vtl
+    response: mapping-templates/Tweet.profile.response.vtl
+    dataSource: usersTable
   Tweet.retweeted:
     kind: UNIT
     request: mapping-templates/Tweet.retweeted.request.vtl
@@ -86,6 +91,16 @@ resolvers:
     request: mapping-templates/ReTweet.retweetOf.request.vtl
     response: mapping-templates/ReTweet.retweetOf.response.vtl
     dataSource: tweetsTable
+  Reply.inReplyToTweet:
+    kind: UNIT
+    request: mapping-templates/Reply.inReplyToTweet.request.vtl
+    response: mapping-templates/Reply.inReplyToTweet.response.vtl
+    dataSource: tweetsTable
+  Reply.inReplyToUsers:
+    kind: UNIT
+    request: mapping-templates/Reply.inReplyToUsers.request.vtl
+    response: mapping-templates/Reply.inReplyToUsers.response.vtl
+    dataSource: usersTable
   UnhydratedTweetsPage.tweets:
     kind: UNIT
     request: mapping-templates/UnhydratedTweetsPage.tweets.request.vtl
