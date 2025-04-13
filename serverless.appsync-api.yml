@@ -76,12 +76,22 @@ resolvers:
     request: mapping-templates/Tweet.retweeted.request.vtl
     response: mapping-templates/Tweet.retweeted.response.vtl
     dataSource: retweetsTable
+  Reply.retweeted:
+    kind: UNIT
+    request: mapping-templates/Tweet.retweeted.request.vtl
+    response: mapping-templates/Tweet.retweeted.response.vtl
+    dataSource: retweetsTable
   Retweet.profile:
     kind: UNIT
     request: mapping-templates/Tweet.profile.request.vtl
     response: mapping-templates/Tweet.profile.response.vtl
     dataSource: usersTable
   Tweet.liked:
+    kind: UNIT
+    request: mapping-templates/Tweet.liked.request.vtl
+    response: mapping-templates/Tweet.liked.response.vtl
+    dataSource: likesTable
+  Reply.liked:
     kind: UNIT
     request: mapping-templates/Tweet.liked.request.vtl
     response: mapping-templates/Tweet.liked.response.vtl

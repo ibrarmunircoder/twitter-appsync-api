@@ -88,6 +88,42 @@ fragment retweetFields on Retweet {
     ... on Tweet {
       ... tweetFields
     }
+    ... on Reply {
+      ... replyFields
+    }
+  }
+}
+`;
+const replyFragment = `
+fragment replyFields on Reply {
+  id
+  profile {
+    ... iProfileFields
+  }
+  createdAt
+   text
+  replies
+  likes
+  retweets
+  retweeted
+  liked
+  inReplyToTweet {
+    id
+    profile {
+      ...iProfileFields
+    }
+    createdAt
+
+    ... on Tweet {
+      replies
+    }
+
+    ... on Reply {
+      replies
+    }
+  }
+  inReplyToUsers {
+    ...iProfileFields
   }
 }
 `;
@@ -101,6 +137,9 @@ fragment iTweetFields on ITweet {
   ... on Retweet {
     ... retweetFields
   }
+  ... on Reply {
+    ... replyFields
+  }
 
 }
 `;
@@ -110,6 +149,7 @@ registerFragment("otherProfileFields", otherProfileFragment);
 registerFragment("iProfileFields", iProfileFragment);
 registerFragment("tweetFields", tweetFragment);
 registerFragment("retweetFields", retweetFragment);
+registerFragment("replyFields", replyFragment);
 registerFragment("iTweetFields", iTweetFragment);
 
 const a_user_signs_up = async (password, name, email) => {
@@ -382,7 +422,9 @@ const a_user_calls_getLikes = async (user, userId, limit, nextToken) => {
 };
 const a_user_calls_retweet = async (user, tweetId) => {
   const retweet = `mutation retweet($tweetId: ID!) {
-    retweet(tweetId: $tweetId)
+    retweet(tweetId: $tweetId) {
+      ...retweetFields
+    }
   }`;
   const variables = {
     tweetId,
@@ -413,6 +455,26 @@ const a_user_calls_unretweet = async (user, tweetId) => {
   );
 
   return data.unretweet;
+};
+const a_user_calls_reply = async (user, tweetId, replyText) => {
+  const reply = `mutation reply($tweetId: ID!, $text: String!) {
+    reply(tweetId: $tweetId, text: $text){
+      ...replyFields
+    }
+  }`;
+  const variables = {
+    tweetId,
+    text: replyText,
+  };
+
+  const data = await GraphQl(
+    process.env.API_URL,
+    reply,
+    user.accessToken,
+    variables
+  );
+
+  return data.reply;
 };
 
 const we_invoke_getImageUploadUrl = async (
@@ -518,4 +580,5 @@ module.exports = {
   a_user_calls_getLikes,
   a_user_calls_retweet,
   a_user_calls_unretweet,
+  a_user_calls_reply,
 };

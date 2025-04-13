@@ -96,7 +96,7 @@ module.exports.handler = async (event) => {
 
   await ddbDocClient.send(command);
 
-  return true;
+  return newTweet;
 };
 
 async function getUserIdsToReplyTo(tweet) {
