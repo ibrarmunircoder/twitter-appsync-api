@@ -47,6 +47,11 @@ resolvers:
     dataSource: unlikeMutation
     request: mapping-templates/Mutation.unlike.request.vtl
     response: mapping-templates/Mutation.unlike.response.vtl
+  Mutation.follow:
+    kind: UNIT
+    dataSource: followMutation
+    request: mapping-templates/Mutation.follow.request.vtl
+    response: mapping-templates/Mutation.follow.response.vtl
   Mutation.tweet:
     kind: UNIT
     dataSource: tweetFunction
@@ -180,6 +185,20 @@ dataSources:
           Resource:
             - !GetAtt UsersTable.Arn
             - !GetAtt TweetsTable.Arn
+  followMutation:
+    type: AMAZON_DYNAMODB
+    description: "Follow Mutation"
+    config:
+      tableName: !Ref RelationshipsTable
+      iamRoleStatements:
+        - Effect: Allow
+          Action:
+            - dynamodb:PutItem
+          Resource: !GetAtt RelationshipsTable.Arn
+        - Effect: Allow
+          Action:
+            - dynamodb:UpdateItem
+          Resource: !GetAtt UsersTable.Arn
   timelinesTable:
     type: AMAZON_DYNAMODB
     description: "Timelines table"
@@ -212,3 +231,4 @@ substitutions: #global substitutions
   TweetsTable: !Ref TweetsTable
   UsersTable: !Ref UsersTable
   LikesTable: !Ref LikesTable
+  RelationshipsTable: !Ref RelationshipsTable
