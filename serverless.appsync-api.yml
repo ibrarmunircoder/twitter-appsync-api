@@ -13,6 +13,11 @@ resolvers:
     dataSource: usersTable
     request: mapping-templates/Query.getMyProfile.request.vtl
     response: mapping-templates/Query.getMyProfile.response.vtl
+  Query.getProfile:
+    kind: UNIT
+    dataSource: usersTable
+    request: mapping-templates/Query.getProfile.request.vtl
+    response: mapping-templates/Query.getProfile.response.vtl
   Query.getTweets:
     kind: UNIT
     dataSource: tweetsTable
@@ -131,6 +136,16 @@ resolvers:
     request: mapping-templates/MyProfile.tweets.request.vtl
     response: mapping-templates/MyProfile.tweets.response.vtl
     dataSource: tweetsTable
+  OtherProfile.following:
+    kind: UNIT
+    request: mapping-templates/OtherProfile.following.request.vtl
+    response: mapping-templates/OtherProfile.following.response.vtl
+    dataSource: relationshipsTable
+  OtherProfile.followedBy:
+    kind: UNIT
+    request: mapping-templates/OtherProfile.followedBy.request.vtl
+    response: mapping-templates/OtherProfile.followedBy.response.vtl
+    dataSource: relationshipsTable
 
 dataSources:
   usersTable:
@@ -204,6 +219,11 @@ dataSources:
     description: "Timelines table"
     config:
       tableName: !Ref TimelinesTable
+  relationshipsTable:
+    type: AMAZON_DYNAMODB
+    description: "Relationships table"
+    config:
+      tableName: !Ref RelationshipsTable
 
   getImageUploadUrlFunction:
     type: AWS_LAMBDA

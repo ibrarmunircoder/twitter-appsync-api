@@ -157,9 +157,19 @@ resources:
         AttributeDefinitions:
           - AttributeName: id
             AttributeType: S
+          - AttributeName: screenName
+            AttributeType: S
         KeySchema:
           - AttributeName: id
             KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: byScreenName
+            KeySchema:
+              - AttributeName: screenName
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+
         Tags:
           - Key: Enviornment
             Value: ${self:custom.stage}
