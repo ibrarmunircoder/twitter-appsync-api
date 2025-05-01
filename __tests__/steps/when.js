@@ -47,6 +47,8 @@ fragment otherProfileFields on OtherProfile {
   followingCount
   tweetsCount
   likesCounts
+  following
+  followedBy
 }
 `;
 
@@ -240,6 +242,37 @@ const a_user_calls_getMyProfile = async (user) => {
   );
 
   const profile = data.getMyProfile;
+  return profile;
+};
+
+const a_user_calls_getProfile = async (user, screenName) => {
+  const getProfile = `
+    query getProfile($screenName: String!) {
+      getProfile(screenName: $screenName) {
+          ... otherProfileFields
+
+          tweets {
+            nextToken
+            tweets {
+              ... iTweetFields
+            }
+          }
+      }
+    }
+  `;
+
+  const variables = {
+    screenName,
+  };
+
+  const data = await GraphQl(
+    process.env.API_URL,
+    getProfile,
+    user.accessToken,
+    variables
+  );
+
+  const profile = data.getProfile;
   return profile;
 };
 
@@ -476,6 +509,23 @@ const a_user_calls_reply = async (user, tweetId, replyText) => {
 
   return data.reply;
 };
+const a_user_calls_follow = async (user, userId) => {
+  const follow = `mutation follow($userId: ID!) {
+    follow(userId: $userId)
+  }`;
+  const variables = {
+    userId,
+  };
+
+  const data = await GraphQl(
+    process.env.API_URL,
+    follow,
+    user.accessToken,
+    variables
+  );
+
+  return data.follow;
+};
 
 const we_invoke_getImageUploadUrl = async (
   username,
@@ -570,6 +620,7 @@ module.exports = {
   we_invoke_an_appsync_template,
   we_invoke_reply,
   a_user_calls_getMyProfile,
+  a_user_calls_getProfile,
   a_user_calls_editMyProfile,
   we_invoke_getImageUploadUrl,
   a_user_calls_getImageUploadUrl,
@@ -581,4 +632,5 @@ module.exports = {
   a_user_calls_retweet,
   a_user_calls_unretweet,
   a_user_calls_reply,
+  a_user_calls_follow,
 };

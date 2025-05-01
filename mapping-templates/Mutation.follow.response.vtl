@@ -1,4 +1,4 @@
-mapping-templates/Mutation.follow.request.vtl#if (!$util.isNull($context.result.cancellationReasons))
+#if (!$util.isNull($context.result.cancellationReasons))
     $util.error('Dynamodb transaction error')
 #end
 
