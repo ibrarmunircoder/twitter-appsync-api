@@ -1,4 +1,4 @@
-const { S3Client, PutObjectCommand, CreaPr } = require("@aws-sdk/client-s3");
+const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 const ulid = require("ulid");
 

@@ -31,9 +31,10 @@
     "@aws-sdk/client-s3": "^3.758.0",
     "@aws-sdk/lib-dynamodb": "^3.751.0",
     "@aws-sdk/s3-request-presigner": "^3.758.0",
+    "@aws-sdk/util-dynamodb": "^3.799.0",
     "chance": "^1.1.12",
     "jest": "^29.7.0",
-    "ulid": "^2.3.0",
-    "lodash": "^4.17.21"
+    "lodash": "^4.17.21",
+    "ulid": "^2.3.0"
   }
 }
