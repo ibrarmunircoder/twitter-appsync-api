@@ -39,6 +39,7 @@ custom:
       - TweetsTable
       - TimelinesTable
       - RetweetsTable
+      - RelationshipsTable
     output:
       file: ./outputs.json
       format: json
@@ -421,6 +422,8 @@ resources:
       Value: !Ref TimelinesTable
     RetweetsTable:
       Value: !Ref RetweetsTable
+    RelationshipsTable:
+      Value: !Ref RelationshipsTable
     AwsRegion:
       Value: ${self:custom.region}
     AppsyncUrl:

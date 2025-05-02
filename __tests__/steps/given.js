@@ -6,9 +6,16 @@ const {
   AdminConfirmSignUpCommand,
   InitiateAuthCommand,
 } = require("@aws-sdk/client-cognito-identity-provider");
+const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
+const { DynamoDBDocumentClient, PutCommand } = require("@aws-sdk/lib-dynamodb");
+
+const ddbClient = new DynamoDBClient();
+const ddbDocClient = DynamoDBDocumentClient.from(ddbClient);
 
 const cognitoClient = new CognitoIdentityProviderClient();
 const chance = require("chance").Chance();
+
+const { RELATIONSHIPS_TABLE } = process.env;
 
 const a_random_user = () => {
   const firstName = chance.first({ nationality: "en" });
@@ -95,8 +102,29 @@ const an_authenticated_user = async () => {
   };
 };
 
+const a_user_follows_another = async (userId, otherUserId) => {
+  const command = new PutCommand({
+    TableName: RELATIONSHIPS_TABLE,
+    Item: {
+      userId,
+      sk: `FOLLOWS_${otherUserId}`,
+      otherUserId,
+      createdAt: new Date().toJSON(),
+    },
+  });
+
+  const response = await ddbDocClient.send(command);
+  console.log(
+    response.Attributes,
+    userId,
+    otherUserId,
+    "hfjgkldhfghhgdhhgklhdfklghkldfhgkldfhgkldfh"
+  );
+};
+
 module.exports = {
   a_random_user,
   an_appsync_context,
   an_authenticated_user,
+  a_user_follows_another,
 };

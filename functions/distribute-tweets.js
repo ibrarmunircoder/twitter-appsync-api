@@ -15,11 +15,11 @@ const { TIMELINES_TABLE, RELATIONSHIPS_TABLE } = process.env;
 module.exports.handler = async (event) => {
   for (let record of event.Records) {
     if (record.eventName === "INSERT") {
-      const tweet = unmarshall(event.dynamodb.NewImage);
+      const tweet = unmarshall(record.dynamodb.NewImage);
       const followers = await getFollowers(tweet.creator);
       await distribute(tweet, followers);
     } else if (record.eventName === "REMOVE") {
-      const tweet = unmarshall(event.dynamodb.OldImage);
+      const tweet = unmarshall(record.dynamodb.OldImage);
       const followers = await getFollowers(tweet.creator);
       await undistribute(tweet, followers);
     }
@@ -101,7 +101,7 @@ async function getFollowers(userId) {
     if (response.LastEvaluatedKey) {
       return await loop(acc.concat(userIds), response.LastEvaluatedKey);
     } else {
-      return acc.concat(userId);
+      return acc.concat(userIds);
     }
   };
 
