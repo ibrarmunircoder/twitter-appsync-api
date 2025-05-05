@@ -164,6 +164,18 @@ const tweet_exists_in_TimelinesTable = async (userId, tweetId) => {
 
   return response.Item;
 };
+const tweet_does_not_exist_in_TimelinesTable = async (userId, tweetId) => {
+  const command = new GetCommand({
+    TableName: process.env.TIMELINES_TABLE,
+    Key: { userId, tweetId },
+  });
+
+  const response = await ddbDocClient.send(command);
+
+  expect(response.Item).not.toBeTruthy();
+
+  return response.Item;
+};
 const there_are_N_tweets_in_TimelinesTable = async (userId, n) => {
   const command = new QueryCommand({
     TableName: process.env.TIMELINES_TABLE,
@@ -211,6 +223,7 @@ module.exports = {
   retweet_exists_in_ReTweetsTable,
   retweet_does_not_exists_in_ReTweetsTable,
   tweet_exists_in_TimelinesTable,
+  tweet_does_not_exist_in_TimelinesTable,
   tweetsCount_is_updated_in_UsersTable,
   there_are_N_tweets_in_TimelinesTable,
   reply_exists_in_TweetsTable,

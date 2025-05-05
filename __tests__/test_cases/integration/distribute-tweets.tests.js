@@ -3,7 +3,10 @@ const {
   a_user_follows_another,
 } = require("../../steps/given");
 const { we_invoke_distributeTweets } = require("../../steps/when");
-const { tweet_exists_in_TimelinesTable } = require("../../steps/then");
+const {
+  tweet_exists_in_TimelinesTable,
+  tweet_does_not_exist_in_TimelinesTable,
+} = require("../../steps/then");
 const chance = require("chance").Chance();
 describe("Given user A follows user B", () => {
   let userA, userB;
@@ -25,6 +28,21 @@ describe("Given user A follows user B", () => {
 
     it("Adds user B's tweet to user A's timeline", async () => {
       await tweet_exists_in_TimelinesTable(userA.username, tweetId);
+    });
+
+    describe("When user B deletes the tweet", () => {
+      const tweetId = chance.guid();
+      beforeAll(async () => {
+        const event = require("../../data/delete-tweet.json");
+        const { OldImage } = event.Records[0].dynamodb;
+        OldImage.creator.S = userB.username;
+        OldImage.id.S = tweetId;
+        await we_invoke_distributeTweets(event);
+      });
+
+      it("Removes user B's tweet from user A's timeline", async () => {
+        await tweet_does_not_exist_in_TimelinesTable(userA.username, tweetId);
+      });
     });
   });
 });

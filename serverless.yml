@@ -12,7 +12,7 @@ provider:
   name: aws
   stage: dev
   runtime: nodejs20.x
-  profile: ducp13
+  profile: nandha-powser
   region: us-east-1
   environment:
     STAGE: ${self:custom.stage}
