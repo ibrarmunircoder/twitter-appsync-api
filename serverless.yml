@@ -168,6 +168,29 @@ functions:
       - Effect: Allow
         Action: dynamodb:Query
         Resource: !Sub "${RelationshipsTable.Arn}/index/byOtherUser"
+  distrubuteTweetsToFollower:
+    handler: functions/distribute-tweets-to-follower.handler
+    environment:
+      TWEETS_TABLE: !Ref TweetsTable
+      RELATIONSHIPS_TABLE: !Ref RelationshipsTable
+      MAX_TWEETS: 100
+    events:
+      - stream:
+          type: dynamodb
+          arn: !GetAtt RelationshipsTable.StreamArn
+    iamRoleStatementsName: ${self:service}-${self:custom.stage}-distributeTweetsToFollower
+    iamRoleStatements:
+      - Effect: Allow
+        Action: dynamodb:Query
+        Resource:
+          - !Sub "${TweetsTable.Arn}/index/byCreator"
+          - !Sub "${TimelinesTable.Arn}/index/byDistributedFrom"
+      - Effect: Allow
+        Action:
+          - dynamodb:BatchWriteItem
+          - dynamodb:PutItem
+          - dynamodb:DeleteItem
+        Resource: !GetAtt TimelinesTable.Arn
 
 resources:
   Resources:
@@ -255,11 +278,22 @@ resources:
             AttributeType: S
           - AttributeName: tweetId
             AttributeType: S
+          - AttributeName: distributedFrom
+            AttributeType: S
         KeySchema:
           - AttributeName: userId
             KeyType: HASH
           - AttributeName: tweetId
             KeyType: RANGE
+        GlobalSecondaryIndexes:
+          - IndexName: byDistributedFrom
+            KeySchema:
+              - AttributeName: userId
+                KeyType: HASH
+              - AttributeName: distributedFrom
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
 
         Tags:
           - Key: Enviornment
@@ -330,6 +364,8 @@ resources:
                 KeyType: RANGE
             Projection:
               ProjectionType: ALL
+        StreamSpecification:
+          StreamViewType: NEW_AND_OLD_IMAGES
         Tags:
           - Key: Enviornment
             Value: ${self:custom.stage}

@@ -57,6 +57,11 @@ resolvers:
     dataSource: followMutation
     request: mapping-templates/Mutation.follow.request.vtl
     response: mapping-templates/Mutation.follow.response.vtl
+  Mutation.unfollow:
+    kind: UNIT
+    dataSource: unfollowMutation
+    request: mapping-templates/Mutation.unfollow.request.vtl
+    response: mapping-templates/Mutation.unfollow.response.vtl
   Mutation.tweet:
     kind: UNIT
     dataSource: tweetFunction
@@ -209,6 +214,20 @@ dataSources:
         - Effect: Allow
           Action:
             - dynamodb:PutItem
+          Resource: !GetAtt RelationshipsTable.Arn
+        - Effect: Allow
+          Action:
+            - dynamodb:UpdateItem
+          Resource: !GetAtt UsersTable.Arn
+  unfollowMutation:
+    type: AMAZON_DYNAMODB
+    description: "Unfollow Mutation"
+    config:
+      tableName: !Ref RelationshipsTable
+      iamRoleStatements:
+        - Effect: Allow
+          Action:
+            - dynamodb:DeleteItem
           Resource: !GetAtt RelationshipsTable.Arn
         - Effect: Allow
           Action:
