@@ -36,6 +36,13 @@ resolvers:
   Query.getImageUploadUrl:
     kind: UNIT
     dataSource: getImageUploadUrlFunction
+  Query.getFollowers:
+    kind: PIPELINE
+    request: mapping-templates/Query.getFollowers.request.vtl
+    response: mapping-templates/Query.getFollowers.response.vtl
+    functions:
+      - getFollowers
+      - hydrateFollowers
 
   Mutation.editMyProfile:
     kind: UNIT
@@ -151,6 +158,16 @@ resolvers:
     request: mapping-templates/OtherProfile.followedBy.request.vtl
     response: mapping-templates/OtherProfile.followedBy.response.vtl
     dataSource: relationshipsTable
+
+pipelineFunctions:
+  getFollowers:
+    dataSource: relationshipsTable
+    request: mapping-templates/getFollowers.request.vtl
+    response: mapping-templates/getFollowers.response.vtl
+  hydrateFollowers:
+    dataSource: usersTable
+    request: mapping-templates/hydrateFollowers.request.vtl
+    response: mapping-templates/hydrateFollowers.response.vtl
 
 dataSources:
   usersTable:
