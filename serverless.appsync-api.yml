@@ -43,6 +43,16 @@ resolvers:
     functions:
       - getFollowers
       - hydrateFollowers
+  Query.getFollowing:
+    kind: PIPELINE
+    request: mapping-templates/Query.getFollowing.request.vtl
+    response: mapping-templates/Query.getFollowing.response.vtl
+    functions:
+      - getFollowing
+      - hydrateFollowing
+    # same template for both
+    request: mapping-templates/Query.getFollowers.request.vtl
+    response: mapping-templates/Query.getFollowers.response.vtl
 
   Mutation.editMyProfile:
     kind: UNIT
@@ -168,6 +178,14 @@ pipelineFunctions:
     dataSource: usersTable
     request: mapping-templates/hydrateFollowers.request.vtl
     response: mapping-templates/hydrateFollowers.response.vtl
+  getFollowing:
+    dataSource: relationshipsTable
+    request: mapping-templates/getFollowing.request.vtl
+    response: mapping-templates/getFollowing.response.vtl
+  hydrateFollowing:
+    dataSource: usersTable
+    request: mapping-templates/hydrateFollowing.request.vtl
+    response: mapping-templates/hydrateFollowing.response.vtl
 
 dataSources:
   usersTable:
