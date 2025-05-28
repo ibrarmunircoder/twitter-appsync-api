@@ -50,9 +50,6 @@ resolvers:
     functions:
       - getFollowing
       - hydrateFollowing
-    # same template for both
-    request: mapping-templates/Query.getFollowers.request.vtl
-    response: mapping-templates/Query.getFollowers.response.vtl
 
   Mutation.editMyProfile:
     kind: UNIT

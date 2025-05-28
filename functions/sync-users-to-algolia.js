@@ -1,11 +1,15 @@
 const { unmarshall } = require("@aws-sdk/util-dynamodb");
 const { initClient } = require("../lib/algolia");
+const middy = require("@middy/core");
+const ssm = require("@middy/ssm");
 
-const { STAGE, ALGOLIA_APP_ID, ALGOLIA_WRITER_KEY } = process.env;
+const { STAGE } = process.env;
 
-const algoliaClient = initClient(ALGOLIA_APP_ID, ALGOLIA_WRITER_KEY);
-
-module.exports.handler = async (event) => {
+module.exports.handler = middy(async (event, context) => {
+  const algoliaClient = initClient(
+    context.ALGOLIA_APP_ID,
+    context.ALGOLIA_WRITER_KEY
+  );
   for (let record of event.Records) {
     if (record.eventName === "INSERT" || record.eventName === "MODIFY") {
       const profile = unmarshall(record.dynamodb.NewImage);
@@ -22,4 +26,14 @@ module.exports.handler = async (event) => {
       });
     }
   }
-};
+}).use(
+  ssm({
+    cache: true,
+    cacheExpiry: 1 * 60 * 1000, // 1 mins
+    setToContext: true,
+    fetchData: {
+      ALGOLIA_APP_ID: `/${STAGE}/algolia-app-id`,
+      ALGOLIA_WRITER_KEY: `/${STAGE}/algolia-admin-key`,
+    },
+  })
+);

@@ -198,9 +198,12 @@ functions:
       - stream:
           type: dynamodb
           arn: !GetAtt UsersTable.StreamArn
-    environment:
-      ALGOLIA_APP_ID: xxx
-      ALGOLIA_WRITER_KEY: xxx
+    iamRoleStatements:
+      - Effect: Allow
+        Action: ssm:GetParameters
+        Resource:
+          - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${self:custom.stage}/algolia-app-id
+          - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${self:custom.stage}/algolia-admin-key
 
   syncTweetsToAlgolia:
     handler: functions/sync-tweets-to-algolia.handler
@@ -208,9 +211,12 @@ functions:
       - stream:
           type: dynamodb
           arn: !GetAtt TweetsTable.StreamArn
-    environment:
-      ALGOLIA_APP_ID: xxx
-      ALGOLIA_WRITER_KEY: xxx
+    iamRoleStatements:
+      - Effect: Allow
+        Action: ssm:GetParameters
+        Resource:
+          - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${self:custom.stage}/algolia-app-id
+          - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${self:custom.stage}/algolia-admin-key
 
 resources:
   Resources:
@@ -233,6 +239,8 @@ resources:
                 KeyType: HASH
             Projection:
               ProjectionType: ALL
+        StreamSpecification:
+          StreamViewType: NEW_AND_OLD_IMAGES
 
         Tags:
           - Key: Enviornment
