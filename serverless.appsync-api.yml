@@ -298,6 +298,11 @@ dataSources:
     config:
       functionName: reply
 
+  searchFunction:
+    type: AWS_LAMBDA
+    config:
+      functionName: search
+
 substitutions: #global substitutions
   TweetsTable: !Ref TweetsTable
   UsersTable: !Ref UsersTable

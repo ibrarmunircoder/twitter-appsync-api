@@ -10,8 +10,7 @@ const _ = require("lodash");
 
 const ddbClient = new DynamoDBClient();
 const ddbDocClient = DynamoDBDocumentClient.from(ddbClient);
-const { TIMELINTWEETS_TABLEES_TABLE, RELATIONSHIPS_TABLE, MAX_TWEETS } =
-  process.env;
+const { MAX_TWEETS } = process.env;
 const MaxTweets = parseInt(MAX_TWEETS);
 
 module.exports.handler = async (event) => {

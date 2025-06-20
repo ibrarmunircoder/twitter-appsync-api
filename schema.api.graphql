@@ -12,6 +12,12 @@ type Query {
   getFollowing(userId: String!, limit: Int!, nextToken: String): ProfilesPage!
   getMyTimeline(limit: Int, nextToken: String): UnhydratedTweetsPage!
   getImageUploadUrl(extension: String, contentType: String): AWSURL!
+  search(
+    query: String!
+    mode: SearchMode!
+    limit: Int!
+    nextToken: String
+  ): SearchResultsPage
 }
 
 type Mutation {
@@ -150,4 +156,19 @@ type UnhydratedTweetsPage {
 type ProfilesPage {
   profiles: [IProfile!]
   nextToken: String
+}
+
+union SearchResult = MyProfile | OtherProfile | Tweet | Reply
+
+type SearchResultsPage {
+  results: [SearchResult!]
+  nextToken: String
+}
+
+enum SearchMode {
+  Top
+  Latest
+  People
+  Photos
+  Videos
 }

@@ -6,7 +6,7 @@ const ssm = require("@middy/ssm");
 
 const { STAGE } = process.env;
 
-module.exports.handler = middy(async (event) => {
+module.exports.handler = middy(async (event, context) => {
   const algoliaClient = initClient(
     context.ALGOLIA_APP_ID,
     context.ALGOLIA_WRITER_KEY
