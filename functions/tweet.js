@@ -5,6 +5,7 @@ const {
 } = require("@aws-sdk/lib-dynamodb");
 const ulid = require("ulid");
 const { TweetTypes } = require("../lib/constants");
+const { extractHashTags } = require("../lib/tweets");
 
 const ddbClient = new DynamoDBClient();
 const ddbDocClient = DynamoDBDocumentClient.from(ddbClient);
@@ -16,6 +17,7 @@ module.exports.handler = async (event) => {
   const { username } = event.identity;
   const timestamp = new Date().toISOString();
   const id = ulid.ulid();
+  const hashTags = extractHashTags(text);
 
   const newTweet = {
     __typename: TweetTypes.TWEET,
@@ -26,6 +28,7 @@ module.exports.handler = async (event) => {
     replies: 0,
     likes: 0,
     retweets: 0,
+    hashTags,
   };
 
   const command = new TransactWriteCommand({

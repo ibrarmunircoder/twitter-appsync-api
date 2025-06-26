@@ -51,6 +51,10 @@ resolvers:
       - getFollowing
       - hydrateFollowing
 
+  Query.getHashTag:
+    kind: UNIT
+    dataSource: getHashTagFunction
+
   Mutation.editMyProfile:
     kind: UNIT
     dataSource: usersTable
@@ -302,6 +306,11 @@ dataSources:
     type: AWS_LAMBDA
     config:
       functionName: search
+
+  getHashTagFunction:
+    type: AWS_LAMBDA
+    config:
+      functionName: getHashTag
 
 substitutions: #global substitutions
   TweetsTable: !Ref TweetsTable
