@@ -6,8 +6,16 @@ authentication:
     userPoolId: !Ref CognitoUserPool
     awsRegion: us-east-1
     defaultAction: ALLOW
+additionalAuthentications:
+  - type: AWS_IAM
 
 resolvers:
+  Subscription.onNotified:
+    kind: UNIT
+    dataSource: none
+    request: mapping-templates/Subscription.onNotified.request.vtl
+    response: mapping-templates/Subscription.onNotified.response.vtl
+
   Query.getMyProfile:
     kind: UNIT
     dataSource: usersTable
@@ -189,6 +197,8 @@ pipelineFunctions:
     response: mapping-templates/hydrateFollowing.response.vtl
 
 dataSources:
+  none:
+    type: "NONE"
   usersTable:
     type: AMAZON_DYNAMODB
     description: "Users table"
